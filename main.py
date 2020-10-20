@@ -9,9 +9,6 @@ from pepeToken import *
 
 client = discord.Client()
 
-pytesseract.pytesseract.tesseract_cmd = r'E:\Users\Seweryn\AppData\Local\Tesseract-OCR\tesseract.exe'
-
-
 def wczytajBaze():
     screeny = {}
     firstUsableId = 0
