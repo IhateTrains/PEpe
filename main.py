@@ -2,6 +2,9 @@ import discord
 import pytesseract
 from PIL import Image
 import os
+
+# pepeToken.py should exist in the same dir as main.py, and contain a 'token' variable
+# DO NOT SHARE YOUR TOKEN
 from pepeToken import *
 
 client = discord.Client()
