@@ -5,6 +5,7 @@ import os
 
 # pepeToken.py should exist in the same dir as main.py, and contain a 'token' variable
 # DO NOT SHARE YOUR TOKEN
+import random
 from pepeToken import *
 
 client = discord.Client()
@@ -45,6 +46,12 @@ def containsOneImageAttachment(message):
     return False
 
 
+thanksStrings = ['Screen przyjęty, dziena byczq +1', 'Dzięki za screena', 'Screen do screena, a będzie solidna baza',
+                 'Dziena byczq +1', '❤']
+def getRandomThanksString():
+    return random.choice(thanksStrings)
+
+
 @client.event
 async def on_message(message):
     baza = wczytajBaze()
@@ -75,7 +82,7 @@ async def on_message(message):
             await file.save('obrazek.jpg')
 
             ocrResult = pytesseract.image_to_string(Image.open('obrazek.jpg'), lang='pol').lower().replace('\n', ' ')
-            if ocrResult.find('dobra odpowiedź') != -1:
+            if ocrResult.find('dobra odpowiedź') != -1 or ocrResult.find('dobra odpowiedż') != -1:  # OCR może się walnąć, 'ż' i 'ź' są w chuj podobne
                 nazwaObrazka = str(firstUsableId) + '.jpg'
                 firstUsableId += 1
                 if list(screeny.keys()).count(ocrResult) > 0:  # zadanie jest już w bazie
@@ -83,7 +90,7 @@ async def on_message(message):
                 await file.save(nazwaObrazka)
                 screeny[ocrResult] = nazwaObrazka
                 zapiszBaze(firstUsableId, screeny)
-                await message.channel.send('Obrazek przyjęty, dziena byczq +1')
+                await message.channel.send(getRandomThanksString())
 
 
 client.run(token)
