@@ -2,12 +2,12 @@ import discord
 import pytesseract
 from PIL import Image
 import os
+
+# pepeToken.py should exist in the same dir as main.py, and contain a 'token' variable
+# DO NOT SHARE YOUR TOKEN
 from pepeToken import *
 
 client = discord.Client()
-
-pytesseract.pytesseract.tesseract_cmd = r'E:\Users\Seweryn\AppData\Local\Tesseract-OCR\tesseract.exe'
-
 
 def wczytajBaze():
     screeny = {}
