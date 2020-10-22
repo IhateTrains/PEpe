@@ -5,7 +5,6 @@ import os
 
 # pepeToken.py should exist in the same dir as main.py, and contain a 'token' variable
 # DO NOT SHARE YOUR TOKEN
-import random
 from pepeToken import token
 
 client = discord.Client()
