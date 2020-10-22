@@ -5,8 +5,7 @@ import os
 
 # pepeToken.py should exist in the same dir as main.py, and contain a 'token' variable
 # DO NOT SHARE YOUR TOKEN
-import random
-from pepeToken import *
+from pepeToken import token
 
 client = discord.Client()
 
@@ -46,12 +45,6 @@ def containsOneImageAttachment(message):
     return False
 
 
-thanksStrings = ['Screen przyjęty, dziena byczq +1', 'Dzięki za screena', 'Screen do screena, a będzie solidna baza',
-                 'Dziena byczq +1', '❤']
-def getRandomThanksString():
-    return random.choice(thanksStrings)
-
-
 @client.event
 async def on_message(message):
     baza = wczytajBaze()
@@ -61,6 +54,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    # komenda !pepe
     if message.content.startswith('!pepe '):  # użytkownik prosi o pomoc
         query = message.content.strip().replace('!pepe ', '').lower()
         listaZnalezionych = []
@@ -75,6 +69,16 @@ async def on_message(message):
         else:
             await message.channel.send('Niestety niczego nie znalazłem :(')
 
+    # komenda !pesize (wyświetl ilość tekstów w bazie)
+    elif message.content.startswith('!pesize'):
+        await message.channel.send('Rozmiar bazy: {}'.format(len(screeny)))
+
+    elif message.content.startswith('!pehelp'):
+        await message.channel.send('Moje komendy:\n'
+                                   '\t**!pepe <fragment tekstu>** - zwróć screeny z danym fragmentem tekstu\n'
+                                   '\t**!pesize** - wyświetl rozmiar bazy\n'
+                                   '\t**!pehelp** - wyświetl pomoc\n')
+
     else:
         if containsOneImageAttachment(message):
             # zapisz obrazek do OCR
@@ -82,7 +86,7 @@ async def on_message(message):
             await file.save('obrazek.jpg')
 
             ocrResult = pytesseract.image_to_string(Image.open('obrazek.jpg'), lang='pol').lower().replace('\n', ' ')
-            if ocrResult.find('dobra odpowiedź') != -1 or ocrResult.find('dobra odpowiedż') != -1:  # OCR może się walnąć, 'ż' i 'ź' są w chuj podobne
+            if ocrResult.find('informacja zwrotna') != -1:
                 nazwaObrazka = str(firstUsableId) + '.jpg'
                 firstUsableId += 1
                 if list(screeny.keys()).count(ocrResult) > 0:  # zadanie jest już w bazie
@@ -90,7 +94,7 @@ async def on_message(message):
                 await file.save(nazwaObrazka)
                 screeny[ocrResult] = nazwaObrazka
                 zapiszBaze(firstUsableId, screeny)
-                await message.channel.send(getRandomThanksString())
+                await message.add_reaction('❤')
 
 
 client.run(token)
