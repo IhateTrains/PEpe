@@ -9,13 +9,11 @@ from pepeToken import token
 
 client = discord.Client()
 
+
 def wczytajBaze():
     screeny = {}
-    firstUsableId = 0
     try:
-        baza = open('baza.txt', 'r')
-        # read first usable ID
-        firstUsableId = int(baza.readline())
+        baza = open('baza.txt', 'r+')
         imagePairLines = baza.readlines()
         for line in imagePairLines:
             pozycja = line.rfind('; ')
@@ -23,13 +21,11 @@ def wczytajBaze():
         baza.close()
     except FileNotFoundError:
         print('Nie wczytano bazy')
-    return firstUsableId, screeny
+    return screeny
 
 
-def zapiszBaze(firstUsableId, screeny):
-    baza = open('baza.txt', 'w')
-    # save first usable ID
-    baza.write(str(firstUsableId) + '\n')
+def zapiszBaze(screeny):
+    baza = open('baza.txt', 'w+')
     for key in screeny.keys():
         baza.write(key + '; ' + screeny[key] + '\n')
 
@@ -47,9 +43,7 @@ def containsOneImageAttachment(message):
 
 @client.event
 async def on_message(message):
-    baza = wczytajBaze()
-    screeny = baza[1]  # pary: tekst z OCR, nazwa obrazka
-    firstUsableId = baza[0]
+    screeny = wczytajBaze()  # pary: tekst z OCR, link do obrazka
 
     if message.author == client.user:
         return
@@ -65,7 +59,7 @@ async def on_message(message):
         if len(listaZnalezionych) > 0:
             await message.channel.send('{.author.mention}, coś dla ciebie mam!'.format(message))
             for znaleziony in listaZnalezionych:
-                await message.channel.send(file=discord.File(znaleziony))
+                await message.channel.send(znaleziony)
         else:
             await message.channel.send('Niestety niczego nie znalazłem :(')
 
@@ -83,18 +77,17 @@ async def on_message(message):
         if containsOneImageAttachment(message):
             # zapisz obrazek do OCR
             file = message.attachments[0]
-            await file.save('obrazek.jpg')
+            await file.save('obrazek.png')
 
-            ocrResult = pytesseract.image_to_string(Image.open('obrazek.jpg'), lang='pol').lower().replace('\n', ' ')
+            ocrResult = pytesseract.image_to_string(Image.open('obrazek.png'), lang='pol').lower().replace('\n', ' ')
             if ocrResult.find('informacja zwrotna') != -1:
-                nazwaObrazka = str(firstUsableId) + '.jpg'
-                firstUsableId += 1
+                linkDoObrazka = file.url
                 if list(screeny.keys()).count(ocrResult) > 0:  # zadanie jest już w bazie
-                    os.remove(screeny[ocrResult])
-                await file.save(nazwaObrazka)
-                screeny[ocrResult] = nazwaObrazka
-                zapiszBaze(firstUsableId, screeny)
-                await message.add_reaction('❤')
+                    await message.add_reaction('👌')
+                else:
+                    screeny[ocrResult] = linkDoObrazka
+                    zapiszBaze(screeny)
+                    await message.add_reaction('❤')
 
 
 client.run(token)
