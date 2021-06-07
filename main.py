@@ -80,14 +80,13 @@ async def on_message(message):
             await file.save('obrazek.png')
 
             ocrResult = pytesseract.image_to_string(Image.open('obrazek.png'), lang='pol').lower().replace('\n', ' ')
-            if ocrResult.find('informacja zwrotna') != -1:
-                linkDoObrazka = file.url
-                if list(screeny.keys()).count(ocrResult) > 0:  # zadanie jest już w bazie
-                    await message.add_reaction('👌')
-                else:
-                    screeny[ocrResult] = linkDoObrazka
-                    zapiszBaze(screeny)
-                    await message.add_reaction('❤')
+            linkDoObrazka = file.url
+            if list(screeny.keys()).count(ocrResult) > 0:  # zadanie jest już w bazie
+                await message.add_reaction('👌')
+            else:
+                screeny[ocrResult] = linkDoObrazka
+                zapiszBaze(screeny)
+                await message.add_reaction('❤')
 
 
 client.run(token)
